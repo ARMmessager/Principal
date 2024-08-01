@@ -104,3 +104,85 @@ evenements_interessants.to_excel('evenements_interessants.xlsx', index=False)
 
 #Afficher les événements filtrés
 print(evenements_interessants)
+
+
+
+Pour trier et extraire les événements financiers qui vous intéressent à partir d'un calendrier complet, vous pouvez utiliser un code Python qui charge le calendrier à partir d'un fichier Excel, filtre les événements en fonction de mots-clés ou de critères définis, et extrait uniquement ceux qui sont d'intérêt. Voici comment vous pouvez procéder :
+
+1. **Charger le fichier Excel :** Utiliser `pandas` pour lire le fichier Excel contenant le calendrier des événements.
+2. **Définir les critères de filtrage :** Utiliser des mots-clés ou des expressions régulières pour identifier les événements d'intérêt.
+3. **Filtrer les événements :** Parcourir le calendrier et extraire les événements correspondant aux critères définis.
+4. **Sauvegarder ou afficher les événements filtrés :** Exporter les résultats dans un nouveau fichier Excel ou les afficher.
+
+Voici un exemple de code pour accomplir cela :
+
+```python
+import pandas as pd
+import re
+
+# Charger le calendrier d'événements financiers depuis un fichier Excel
+calendrier = pd.read_excel('calendrier_financier.xlsx')
+
+# Définir les mots-clés ou expressions régulières pour les événements d'intérêt
+mots_cles = ['GDP', 'CPI', 'Interest Rate', 'Employment Report']
+
+# Fonction pour vérifier si un événement correspond aux mots-clés
+def evenement_interessant(evenement, mots_cles):
+    for mot in mots_cles:
+        if re.search(mot, evenement, re.IGNORECASE):
+            return True
+    return False
+
+# Filtrer les événements intéressants
+evenements_interessants = calendrier[calendrier['Event'].apply(lambda x: evenement_interessant(x, mots_cles))]
+
+# Sauvegarder les événements filtrés dans un nouveau fichier Excel
+evenements_interessants.to_excel('evenements_interessants.xlsx', index=False)
+
+# Afficher les événements filtrés
+print(evenements_interessants)
+```
+
+### Explication du Code
+
+1. **Chargement du fichier Excel :**
+   ```python
+   calendrier = pd.read_excel('calendrier_financier.xlsx')
+   ```
+   Cette ligne charge les données du fichier `calendrier_financier.xlsx` dans un DataFrame `calendrier`.
+
+2. **Définition des mots-clés :**
+   ```python
+   mots_cles = ['GDP', 'CPI', 'Interest Rate', 'Employment Report']
+   ```
+   Ici, nous définissons une liste de mots-clés représentant les événements qui vous intéressent.
+
+3. **Fonction de filtrage :**
+   ```python
+   def evenement_interessant(evenement, mots_cles):
+       for mot in mots_cles:
+           if re.search(mot, evenement, re.IGNORECASE):
+               return True
+       return False
+   ```
+   Cette fonction vérifie si un événement contient l'un des mots-clés définis.
+
+4. **Filtrage des événements :**
+   ```python
+   evenements_interessants = calendrier[calendrier['Event'].apply(lambda x: evenement_interessant(x, mots_cles))]
+   ```
+   Nous utilisons la méthode `apply` pour appliquer la fonction de filtrage à chaque événement du calendrier.
+
+5. **Sauvegarde et affichage :**
+   ```python
+   evenements_interessants.to_excel('evenements_interessants.xlsx', index=False)
+   print(evenements_interessants)
+   ```
+   Les événements filtrés sont sauvegardés dans un nouveau fichier Excel et affichés.
+
+### Remarques
+
+- Assurez-vous que la colonne contenant les noms des événements dans votre fichier Excel s'appelle bien `Event`. Si ce n'est pas le cas, remplacez `Event` par le nom correct de la colonne.
+- Vous pouvez ajuster les mots-clés et les expressions régulières selon vos besoins pour une meilleure correspondance avec les événements d'intérêt.
+
+Ce code devrait vous permettre de filtrer et d'extraire efficacement les événements financiers qui vous intéressent à partir de votre calendrier complet.
