@@ -79,3 +79,28 @@ print(data)
 Ensure you replace `your_proxy_username`, `your_proxy_password`, `proxy_address`, and `proxy_port` with your actual proxy details.
 
 By following these steps, you should be able to resolve the proxy error and fetch data using yfinance in VS Code.
+
+import pandas as pd
+import re
+
+# Charger le calendrier d'événements financiers depuis un fichier Excel
+calendrier = pd.read_excel('calendrier_financier.xlsx')
+
+# Définir les mots-clés ou expressions régulières pour les événements d'intérêt
+mots_cles = ['GDP', 'CPI', 'Interest Rate', 'Employment Report']
+
+# Fonction pour vérifier si un événement correspond aux mots-clés
+def evenement_interessant(evenement, mots_cles):
+    for mot in mots_cles:
+        if re.search(mot, evenement, re.IGNORECASE):
+            return True
+    return False
+
+# Filtrer les événements intéressants
+evenements_interessants = calendrier[calendrier['Event'].apply(lambda x: evenement_interessant(x, mots_cles))]
+
+# Sauvegarder les événements filtrés dans un nouveau fichier Excel
+evenements_interessants.to_excel('evenements_interessants.xlsx', index=False)
+
+# Afficher les événements filtrés
+print(evenements_interessants)
