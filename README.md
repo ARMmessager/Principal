@@ -188,7 +188,7 @@ print(evenements_interessants)
 Ce code devrait vous permettre de filtrer et d'extraire efficacement les événements financiers qui vous intéressent à partir de votre calendrier complet.
 
 
-from datetime import date, timedelta
+   from datetime import date, timedelta
 import pandas as pd
 import requests
 from pandas import DataFrame
