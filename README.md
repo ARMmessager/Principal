@@ -186,3 +186,71 @@ print(evenements_interessants)
 - Vous pouvez ajuster les mots-clés et les expressions régulières selon vos besoins pour une meilleure correspondance avec les événements d'intérêt.
 
 Ce code devrait vous permettre de filtrer et d'extraire efficacement les événements financiers qui vous intéressent à partir de votre calendrier complet.
+
+
+from datetime import date, timedelta
+import pandas as pd
+import requests
+from pandas import DataFrame
+
+def request(url: str, method: str = "get", timeout: int = 0, **kwargs) -> requests.Response:
+    method = method.lower()
+    if method not in ["delete", "get", "head", "patch", "post", "put"]:
+        raise ValueError(f"Invalid method: {method}")
+    headers = kwargs.pop("headers", {})
+    headers["User-Agent"] = headers.get("User-Agent", 
+                                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                                        "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+    timeout = timeout or 10
+    func = getattr(requests, method)
+    return func(url, headers=headers, timeout=timeout, **kwargs)
+
+def get_filters(date_str: str) -> str:
+    return f"?filter[selected_date]={date_str}&filter[with_rating]=false&filter[currency]=USD"
+
+class EventsFetcher:
+    def __init__(self):
+        pass
+    
+    @staticmethod
+    def get_next_earnings(limit: int = 5, start_date: date = date.today()) -> DataFrame:
+        base_url = "https://seekingalpha.com/api/v3/earnings_calendar/tickers"
+        df_earnings = pd.DataFrame()
+        
+        for _ in range(0, limit):
+            start_date = pd.to_datetime(start_date)
+            date_str = str(start_date.strftime("%Y-%m-%d"))
+            response = request(base_url + get_filters(date_str), timeout=10)
+            json = response.json()
+            
+            try:
+                data = json["data"]
+                cleaned_data = [x["attributes"] for x in data]
+                temp_df = pd.DataFrame.from_records(cleaned_data)
+                temp_df = temp_df.drop(columns=["sector_id"])
+                temp_df["Date"] = start_date  # pylint: disable=E1137
+                df_earnings = pd.concat([df_earnings, temp_df], join="outer", ignore_index=True)
+                start_date = start_date + timedelta(days=1)
+            except KeyError:
+                pass
+        
+        df_earnings = df_earnings.rename(
+            columns={
+                "slug": "Ticker",
+                "name": "Name",
+                "release_time": "Release Time",
+                "exchange": "Exchange",
+            }
+        )
+        
+        if df_earnings.empty:
+            print("No earnings found. Try adjusting the date.\n")
+            return pd.DataFrame()
+        
+        df_earnings = df_earnings[df_earnings["Date"] <= pd.to_datetime(start_date + timedelta(days=limit))]
+        return df_earnings
+
+if __name__ == "__main__":
+    events_fetcher_ = EventsFetcher()
+    upcoming_events_ = events_fetcher_.get_next_earnings()
+    print(upcoming_events_)
